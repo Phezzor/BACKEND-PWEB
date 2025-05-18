@@ -33,18 +33,18 @@ const getById = async (req, res) => {
 // POST create supplier
 const create = async (req, res) => {
   try {
-    const { name, contact_info } = req.body;
-    if (!name) {
-      return res.status(400).json({ message: 'Field "name" wajib diisi.' });
+    const { nama, contact_info } = req.body;
+    if (!nama) {
+      return res.status(400).json({ message: 'Field "nama" wajib diisi.' });
     }
     if (!contact_info) {
       return res.status(400).json({ message: 'Field "contact_info" wajib diisi.' });
     }
 
     const result = await pool.query(
-      `INSERT INTO suppliers (name, contact_info, created_at, updated_at)
-       VALUES ($1, $2, NOW(), NOW()) RETURNING *`,
-      [name, contact_info]
+      `INSERT INTO suppliers (nama, contact_info, created_at)
+       VALUES ($1, $2, NOW()) RETURNING *`,
+      [nama, contact_info]
     );
     res.status(201).json({ message: 'Supplier berhasil dibuat.', supplier: result.rows[0] });
   } catch (error) {
@@ -56,18 +56,18 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, contact_info } = req.body;
+    const { nama, contact_info } = req.body;
 
-    if (!name) {
-      return res.status(400).json({ message: 'Field "name" wajib diisi.' });
+    if (!nama) {
+      return res.status(400).json({ message: 'Field "nama" wajib diisi.' });
     }
     if (!contact_info) {
       return res.status(400).json({ message: 'Field "contact_info" wajib diisi.' });
     }
 
     const result = await pool.query(
-      `UPDATE suppliers SET name=$1, contact_info=$2, updated_at=NOW() WHERE id=$3 RETURNING *`,
-      [name, contact_info, id]
+      `UPDATE suppliers SET nama=$1, contact_info=$2 WHERE id=$3 RETURNING *`,
+      [nama, contact_info, id]
     );
 
     if (result.rows.length === 0) {
