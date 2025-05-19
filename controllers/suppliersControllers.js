@@ -33,18 +33,25 @@ const getById = async (req, res) => {
 // POST create supplier
 const create = async (req, res) => {
   try {
-    const { nama, contact_info } = req.body;
+    const { id,nama, contact_info,address} = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: 'Field "id" wajib diisi.' });
+    }
     if (!nama) {
       return res.status(400).json({ message: 'Field "nama" wajib diisi.' });
     }
     if (!contact_info) {
       return res.status(400).json({ message: 'Field "contact_info" wajib diisi.' });
     }
+    if (!address) {
+      return res.status(400).json({ message: 'Field "address" wajib diisi.' });
+    }
 
     const result = await pool.query(
-      `INSERT INTO suppliers (nama, contact_info, created_at)
-       VALUES ($1, $2, NOW()) RETURNING *`,
-      [nama, contact_info]
+      `INSERT INTO suppliers (id,nama, contact_info,address,created_at)
+       VALUES ($1, $2,$3,$4, NOW()) RETURNING *`,
+      [id,nama, contact_info,address]
     );
     res.status(201).json({ message: 'Supplier berhasil dibuat.', supplier: result.rows[0] });
   } catch (error) {

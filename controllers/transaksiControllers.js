@@ -33,15 +33,20 @@ const getById = async (req, res) => {
 // CREATE new transaction
 const create = async (req, res) => {
   try {
-    const { user_id, type, date } = req.body;
-    if (!user_id) return res.status(400).json({ message: 'Field "user_id" wajib diisi.' });
-    if (!type) return res.status(400).json({ message: 'Field "type" wajib diisi.' });
-    if (!date) return res.status(400).json({ message: 'Field "date" wajib diisi.' });
+    const { id,user_id, type, description } = req.body;
+    if (!id) 
+      return res.status(400).json({ message: 'ID transaksi wajib disertakan.' });
+    if (!user_id) 
+      return res.status(400).json({ message: 'Field "user_id" wajib diisi.' });
+    if (!type) 
+      return res.status(400).json({ message: 'Field "type" wajib diisi.' });
+    if (!description) 
+      return res.status(400).json({ message: 'Field "deskripsi" wajib diisi.' });
 
     const result = await pool.query(
-      `INSERT INTO transactions (user_id, type, date, created_at, updated_at)
-       VALUES ($1, $2, $3, NOW(), NOW()) RETURNING *`,
-      [user_id, type, date]
+      `INSERT INTO transactions (id,user_id, type, description, created_at)
+       VALUES ($1, $2, $3,$4, NOW()) RETURNING *`,
+      [id,user_id, type, description]
     );
     res.status(201).json({ message: 'Transaksi berhasil dibuat.', transaction: result.rows[0] });
   } catch (error) {
@@ -55,10 +60,14 @@ const update = async (req, res) => {
     const { id } = req.params;
     const { user_id, type, date } = req.body;
 
-    if (!id) return res.status(400).json({ message: 'ID transaksi wajib disertakan.' });
-    if (!user_id) return res.status(400).json({ message: 'Field "user_id" wajib diisi.' });
-    if (!type) return res.status(400).json({ message: 'Field "type" wajib diisi.' });
-    if (!date) return res.status(400).json({ message: 'Field "date" wajib diisi.' });
+    if (!id) 
+      return res.status(400).json({ message: 'ID transaksi wajib disertakan.' });
+    if (!user_id) 
+      return res.status(400).json({ message: 'Field "user_id" wajib diisi.' });
+    if (!type) 
+      return res.status(400).json({ message: 'Field "type" wajib diisi.' });
+    if (!date)
+       return res.status(400).json({ message: 'Field "date" wajib diisi.' });
 
     const result = await pool.query(
       `UPDATE transactions SET user_id=$1, type=$2, date=$3, updated_at=NOW() WHERE id=$4 RETURNING *`,

@@ -91,9 +91,12 @@ exports.update = async (req, res) => {
     const { product_code, name, category_id, stock_quantity, price } = req.body;
 
     // Validasi input minimal
-    if (!product_code) return res.status(400).json({ message: 'Field product_code wajib diisi.' });
-    if (!name) return res.status(400).json({ message: 'Field name wajib diisi.' });
-    if (!category_id) return res.status(400).json({ message: 'Field category_id wajib diisi.' });
+    if (!product_code) 
+      return res.status(400).json({ message: 'Field product_code wajib diisi.' });
+    if 
+    (!name) return res.status(400).json({ message: 'Field name wajib diisi.' });
+    if (!category_id) 
+      return res.status(400).json({ message: 'Field category_id wajib diisi.' });
     if (stock_quantity == null || isNaN(stock_quantity) || stock_quantity < 0) {
       return res.status(400).json({ message: 'Field stock_quantity harus berupa angka >= 0.' });
     }

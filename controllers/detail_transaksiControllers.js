@@ -28,21 +28,43 @@ const getById = async (req, res) => {
 
 // CREATE new transaction item
 const create = async (req, res) => {
-  const { transaction_id, product_id, quantity, price } = req.body;
+  const { id,transaction_id, product_id, quantity, harga,supplier_id } = req.body;
 
   // Validasi input sederhana
-  if (!transaction_id) return res.status(400).json({ message: 'transaction_id wajib diisi.' });
-  if (!product_id) return res.status(400).json({ message: 'product_id wajib diisi.' });
+  if (!transaction_id) 
+    return res.status(400).json({ message: 'transaction_id wajib diisi.' });
+  if (!product_id) 
+    return res.status(400).json({ message: 'product_id wajib diisi.' });
   if (quantity == null || isNaN(quantity) || quantity <= 0)
     return res.status(400).json({ message: 'quantity harus berupa angka lebih besar dari 0.' });
-  if (price == null || isNaN(price) || price < 0)
+  if (harga == null || isNaN(harga) || harga < 0)
     return res.status(400).json({ message: 'price harus berupa angka dan minimal 0.' });
 
   try {
+
+    // Cek TransaksiID apakah valid
+       const transactionCheck = await pool.query(
+      'SELECT id FROM transactions WHERE id = $1',
+      [transaction_id]
+    );
+    if (transactionCheck.rowCount === 0) {
+      return res.status(404).json({ message: 'Transaksi dengan ID tersebut tidak ditemukan.' });
+    }
+
+    // Cek ProductID apakah valid
+    const productCheck = await pool.query(
+      'SELECT id FROM products WHERE id = $1',
+      [product_id]
+    );
+    if (productCheck.rowCount === 0) {
+      return res.status(404).json({ message: 'Produk dengan ID tersebut tidak ditemukan.' });
+    }
+
+
     const result = await pool.query(
-      `INSERT INTO transaction_items (transaction_id, product_id, quantity, price, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING *`,
-      [transaction_id, product_id, quantity, price]
+      `INSERT INTO transaction_items (id,transaction_id, product_id, quantity, harga,supplier_id)
+       VALUES ($1, $2, $3, $4,$5,$6) RETURNING *`,
+      [id,transaction_id, product_id, quantity, harga,supplier_id]
     );
     res.status(201).json({ message: 'Item transaksi berhasil dibuat.', transactionItem: result.rows[0] });
   } catch (error) {
@@ -55,8 +77,10 @@ const update = async (req, res) => {
   const { transaction_id, product_id, quantity, price } = req.body;
 
   // Validasi input sederhana
-  if (!transaction_id) return res.status(400).json({ message: 'transaction_id wajib diisi.' });
-  if (!product_id) return res.status(400).json({ message: 'product_id wajib diisi.' });
+  if (!transaction_id) 
+    return res.status(400).json({ message: 'transaction_id wajib diisi.' });
+  if (!product_id) 
+    return res.status(400).json({ message: 'product_id wajib diisi.' });
   if (quantity == null || isNaN(quantity) || quantity <= 0)
     return res.status(400).json({ message: 'quantity harus berupa angka lebih besar dari 0.' });
   if (price == null || isNaN(price) || price < 0)

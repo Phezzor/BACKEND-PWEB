@@ -2,11 +2,14 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const pool = require('../config/db');
-const { v4: uuidv4 } = require('uuid');
 
 
 const register = async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const {id, username, email, password, role } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ message: 'ID wajib disertakan.' });
+  }
 
   // Validasi input
   if (!username || !email || !password) {
@@ -21,7 +24,6 @@ const register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const id = uuidv4();
 
     const result = await pool.query(
       'INSERT INTO users (id, username, email, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, username, email, role',
