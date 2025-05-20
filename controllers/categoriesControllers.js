@@ -27,23 +27,23 @@ const getById = async (req, res) => {
 
 // POST create category
 const create = async (req, res) => {
-  const { name } = req.body;
+  const { id,nama } = req.body;
 
-  if (!name || name.trim() === '') {
+  if (!nama || nama.trim() === '') {
     return res.status(400).json({ message: 'Nama kategori wajib diisi.' });
   }
 
   try {
     // Cek apakah nama kategori sudah ada (opsional)
-    const check = await pool.query('SELECT * FROM categories WHERE name = $1', [name]);
+    const check = await pool.query('SELECT * FROM categories WHERE nama = $1', [nama]);
     if (check.rows.length > 0) {
       return res.status(409).json({ message: 'Nama kategori sudah ada.' });
     }
 
     const result = await pool.query(
-      `INSERT INTO categories (name, created_at, updated_at)
-       VALUES ($1, NOW(), NOW()) RETURNING *`,
-      [name]
+      `INSERT INTO categories (id,nama)
+       VALUES ($1, $2) RETURNING *`,
+      [id,nama]
     );
     res.status(201).json({ message: 'Kategori berhasil dibuat.', category: result.rows[0] });
   } catch (error) {
@@ -51,39 +51,46 @@ const create = async (req, res) => {
   }
 };
 
-// PUT update category
 const update = async (req, res) => {
-  const { name } = req.body;
+  const { nama } = req.body;
+  const { id } = req.params;
 
-  if (!name || name.trim() === '') {
+  if (!id || id.trim() === '') {
+    return res.status(400).json({ message: 'ID kategori wajib disertakan di URL.' });
+  }
+
+  if (!nama || nama.trim() === '') {
     return res.status(400).json({ message: 'Nama kategori wajib diisi.' });
   }
 
   try {
-    // Cek apakah kategori ada
-    const check = await pool.query('SELECT * FROM categories WHERE id = $1', [req.params.id]);
+    const check = await pool.query('SELECT * FROM categories WHERE id = $1', [id]);
     if (check.rows.length === 0) {
       return res.status(404).json({ message: 'Kategori tidak ditemukan.' });
     }
 
-    // Cek apakah nama kategori sudah dipakai oleh kategori lain (opsional)
-    const checkName = await pool.query('SELECT * FROM categories WHERE name = $1 AND id <> $2', [
-      name,
-      req.params.id,
-    ]);
-    if (checkName.rows.length > 0) {
+    const checkNama = await pool.query(
+      'SELECT * FROM categories WHERE nama = $1 AND id <> $2',
+      [nama, id]
+    );
+    if (checkNama.rows.length > 0) {
       return res.status(409).json({ message: 'Nama kategori sudah digunakan oleh kategori lain.' });
     }
 
     const result = await pool.query(
-      `UPDATE categories SET name=$1, updated_at=NOW() WHERE id=$2 RETURNING *`,
-      [name, req.params.id]
+      'UPDATE categories SET nama = $1 WHERE id = $2 RETURNING *',
+      [nama, id]
     );
+
     res.json({ message: 'Kategori berhasil diupdate.', category: result.rows[0] });
   } catch (error) {
+    console.error('Update error:', error); // Tambahan debug
     res.status(500).json({ message: 'Gagal mengupdate kategori.', error: error.message });
   }
 };
+
+
+
 
 // DELETE category
 const remove = async (req, res) => {

@@ -1,4 +1,24 @@
 const pool = require('../config/db');
+const generateProductId = async () => {
+  const result = await pool.query(`
+    SELECT id FROM products 
+    WHERE id LIKE 'PRD%' 
+    ORDER BY id DESC 
+    LIMIT 1
+  `);
+
+  if (result.rows.length === 0) {
+    return 'PRD00000001';
+  }
+
+  const lastId = result.rows[0].id; // e.g. 'PRD00000007'
+  const numericPart = parseInt(lastId.replace('PRD', ''), 10); // 7
+  const nextNumber = numericPart + 1;
+  const padded = String(nextNumber).padStart(8, '0'); // '00000008'
+
+  return `PRD${padded}`; // 'PRD00000008'
+};
+
 
 // GET ALL PRODUCTS (with category and supplier info)
 exports.getAll = async (req, res) => {
@@ -118,7 +138,8 @@ exports.getBySupplier = async (req, res) => {
 // CREATE PRODUCT
 exports.create = async (req, res) => {
   try {
-    const { id, produk_kode, nama, deskripsi, harga, stock, category_id, supplier_id } = req.body;
+    const { produk_kode, nama, deskripsi, harga, stock, category_id, supplier_id } = req.body;
+    const id = await generateProductId();
 
     if (!id || !produk_kode || !nama || !category_id || !supplier_id) {
       return res.status(400).json({ message: 'Field wajib tidak lengkap.' });

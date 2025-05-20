@@ -81,7 +81,7 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { id } = req.params;
-    const { user_id, type, date } = req.body;
+    const { user_id, type } = req.body;
 
     if (!id) 
       return res.status(400).json({ message: 'ID transaksi wajib disertakan.' });
@@ -89,12 +89,9 @@ const update = async (req, res) => {
       return res.status(400).json({ message: 'Field "user_id" wajib diisi.' });
     if (!type) 
       return res.status(400).json({ message: 'Field "type" wajib diisi.' });
-    if (!date)
-       return res.status(400).json({ message: 'Field "date" wajib diisi.' });
-
     const result = await pool.query(
-      `UPDATE transactions SET user_id=$1, type=$2, date=$3, updated_at=NOW() WHERE id=$4 RETURNING *`,
-      [user_id, type, date, id]
+      `UPDATE transactions SET user_id=$1, type=$2 WHERE id=$3 RETURNING *`,
+      [user_id, type, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Transaksi tidak ditemukan.' });

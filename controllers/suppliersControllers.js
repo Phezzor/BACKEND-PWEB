@@ -1,5 +1,26 @@
 const pool = require('../config/db');
 
+const generateSupplierId = async () => {
+  const result = await pool.query(`
+    SELECT id FROM suppliers 
+    WHERE id LIKE 'SUP%' 
+    ORDER BY id DESC 
+    LIMIT 1
+  `);
+
+  if (result.rows.length === 0) {
+    return 'SUP00000001';
+  }
+
+  const lastId = result.rows[0].id; // misalnya 'SUP00000123'
+  const numericPart = parseInt(lastId.replace('SUP', ''), 10); // 123
+  const nextNumber = numericPart + 1;
+  const padded = String(nextNumber).padStart(8, '0'); // '00000124'
+
+  return `SUP${padded}`; // hasil: 'SUP00000124'
+};
+
+
 // GET all suppliers
 const getAll = async (req, res) => {
   try {
@@ -33,8 +54,8 @@ const getById = async (req, res) => {
 // POST create supplier
 const create = async (req, res) => {
   try {
-    const { id,nama, contact_info,address} = req.body;
-
+    const {nama, contact_info,address} = req.body;
+    const id = await generateSupplierId()
     if (!id) {
       return res.status(400).json({ message: 'Field "id" wajib diisi.' });
     }
