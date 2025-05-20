@@ -1,5 +1,26 @@
 const pool = require('../config/db');
 
+const generateTransactionId = async () => {
+  const result = await pool.query(`
+    SELECT id FROM transactions 
+    WHERE id LIKE 'TRX%' 
+    ORDER BY id DESC 
+    LIMIT 1
+  `);
+
+  if (result.rows.length === 0) {
+    return 'TRX00000001';
+  }
+
+  const lastId = result.rows[0].id; // e.g. 'TRX007'
+  const numericPart = parseInt(lastId.replace('TRX', ''), 10); // 7
+  const nextNumber = numericPart + 1;
+  const padded = String(nextNumber).padStart(8, '0'); // '008'
+
+  return `TRX${padded}`; // 'TRX008'
+};
+
+
 // GET all transactions
 const getAll = async (req, res) => {
   try {
@@ -33,7 +54,8 @@ const getById = async (req, res) => {
 // CREATE new transaction
 const create = async (req, res) => {
   try {
-    const { id,user_id, type, description } = req.body;
+    const { user_id, type, description } = req.body;
+    const id = await generateTransactionId()
     if (!id) 
       return res.status(400).json({ message: 'ID transaksi wajib disertakan.' });
     if (!user_id) 
@@ -43,10 +65,11 @@ const create = async (req, res) => {
     if (!description) 
       return res.status(400).json({ message: 'Field "deskripsi" wajib diisi.' });
 
+
     const result = await pool.query(
       `INSERT INTO transactions (id,user_id, type, description, created_at)
        VALUES ($1, $2, $3,$4, NOW()) RETURNING *`,
-      [id,user_id, type, description]
+      [id, user_id, type, description]
     );
     res.status(201).json({ message: 'Transaksi berhasil dibuat.', transaction: result.rows[0] });
   } catch (error) {

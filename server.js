@@ -15,12 +15,12 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/auth', authRouthes);
-app.use('/product', productRoutes);
-app.use('/categories', categoryRoutes);
-app.use('/users', userRoutes);
-app.use('/suppliers', supplierRoutes);
-app.use('/transaksi', transaksiRoutes);
-app.use('/detail_transaksi', detailTransaksiRoutes);
+app.use('/api/product', productRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/transaksi', transaksiRoutes);
+app.use('/api/detail_transaksi', detailTransaksiRoutes);
 
 app.get('/', (req, res) => {
     res.send('Welcome to the Faktur API 🚀');

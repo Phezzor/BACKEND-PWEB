@@ -28,7 +28,7 @@ const getById = async (req, res) => {
 
 // CREATE new transaction item
 const create = async (req, res) => {
-  const { id,transaction_id, product_id, quantity, harga,supplier_id } = req.body;
+  const { transaction_id, product_id, quantity, harga,supplier_id } = req.body;
 
   // Validasi input sederhana
   if (!transaction_id) 
@@ -38,7 +38,7 @@ const create = async (req, res) => {
   if (quantity == null || isNaN(quantity) || quantity <= 0)
     return res.status(400).json({ message: 'quantity harus berupa angka lebih besar dari 0.' });
   if (harga == null || isNaN(harga) || harga < 0)
-    return res.status(400).json({ message: 'price harus berupa angka dan minimal 0.' });
+    return res.status(400).json({ message: 'harga harus berupa angka dan minimal 0.' });
 
   try {
 
@@ -62,9 +62,9 @@ const create = async (req, res) => {
 
 
     const result = await pool.query(
-      `INSERT INTO transaction_items (id,transaction_id, product_id, quantity, harga,supplier_id)
-       VALUES ($1, $2, $3, $4,$5,$6) RETURNING *`,
-      [id,transaction_id, product_id, quantity, harga,supplier_id]
+      `INSERT INTO transaction_items (transaction_id, product_id, quantity, harga,supplier_id)
+       VALUES ($1, $2, $3, $4,$5) RETURNING *`,
+      [transaction_id, product_id, quantity, harga,supplier_id]
     );
     res.status(201).json({ message: 'Item transaksi berhasil dibuat.', transactionItem: result.rows[0] });
   } catch (error) {
@@ -74,7 +74,7 @@ const create = async (req, res) => {
 
 // UPDATE transaction item
 const update = async (req, res) => {
-  const { transaction_id, product_id, quantity, price } = req.body;
+  const { transaction_id, product_id, quantity, harga,supplier_id } = req.body;
 
   // Validasi input sederhana
   if (!transaction_id) 
@@ -83,15 +83,15 @@ const update = async (req, res) => {
     return res.status(400).json({ message: 'product_id wajib diisi.' });
   if (quantity == null || isNaN(quantity) || quantity <= 0)
     return res.status(400).json({ message: 'quantity harus berupa angka lebih besar dari 0.' });
-  if (price == null || isNaN(price) || price < 0)
-    return res.status(400).json({ message: 'price harus berupa angka dan minimal 0.' });
+  if (harga == null || isNaN(harga) || harga < 0)
+    return res.status(400).json({ message: 'harga harus berupa angka dan minimal 0.' });
 
   try {
     const result = await pool.query(
       `UPDATE transaction_items
-       SET transaction_id = $1, product_id = $2, quantity = $3, price = $4, updated_at = NOW()
-       WHERE id = $5 RETURNING *`,
-      [transaction_id, product_id, quantity, price, req.params.id]
+       SET transaction_id = $1, product_id = $2, quantity = $3, harga = $4, supplier_id = $5
+       WHERE id = $6 RETURNING *`,
+      [transaction_id, product_id, quantity, harga, supplier_id,req.params.id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Item transaksi tidak ditemukan.' });
