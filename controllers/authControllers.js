@@ -38,6 +38,9 @@ const register = async (req, res) => {
 
 
 const login = async (req, res) => {
+  if (!req.body) {
+    return res.status(400).json({ message: 'Request Body Kosong.' });
+  }
   const { email, password } = req.body;
 
   // Validasi input
